@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navigation.xml"
+    app:startDestination="@id/loginFragment">
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.sergeyrodin.kyivplaces.login.LoginFragment"
+        android:label="@string/login" >
+        <action
+            android:id="@+id/action_loginFragment_to_mapFragment"
+            app:destination="@id/mapFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/mapFragment"
+        android:name="com.sergeyrodin.kyivplaces.map.MapFragment"
+        android:label="{title}"
+        tools:layout="@layout/fragment_map">
+        <argument
+            android:name="title"
+            app:argType="string" />
+    </fragment>
+</navigation>
