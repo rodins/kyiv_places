@@ -14,11 +14,12 @@ private const val TITLE_KEY = "title"
 
 class LoginFragment : Fragment() {
 
+    private lateinit var emailEdit: EditText
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_login, container, false)
     }
 
@@ -26,17 +27,21 @@ class LoginFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val submitButton = view.findViewById<Button>(R.id.submit_button)
-        val emailEdit = view.findViewById<EditText>(R.id.email_edit)
+        emailEdit = view.findViewById(R.id.email_edit)
 
         submitButton.setOnClickListener {
-            findNavController().navigate(
-                R.id.action_loginFragment_to_mapFragment,
-                getBundleWithEmailText(emailEdit)
-            )
+            navigateToMapFragment()
         }
     }
 
-    private fun getBundleWithEmailText(emailEdit: EditText): Bundle {
+    private fun navigateToMapFragment() {
+        findNavController().navigate(
+            R.id.action_loginFragment_to_mapFragment,
+            getBundleWithEmailText()
+        )
+    }
+
+    private fun getBundleWithEmailText(): Bundle {
         val args = Bundle()
         args.putCharSequence(TITLE_KEY, emailEdit.text.toString())
         return args
