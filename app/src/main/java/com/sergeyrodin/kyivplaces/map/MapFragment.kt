@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import androidx.fragment.app.viewModels
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -13,11 +15,13 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.sergeyrodin.kyivplaces.KyivPlacesApplication
 import com.sergeyrodin.kyivplaces.R
+import com.sergeyrodin.kyivplaces.databinding.FragmentMapBinding
 
 class MapFragment : Fragment() {
 
-    private val callback = OnMapReadyCallback { googleMap ->
+    /*private val callback = OnMapReadyCallback { googleMap ->
         /**
          * Manipulates the map once available.
          * This callback is triggered when the map is ready to be used.
@@ -30,6 +34,12 @@ class MapFragment : Fragment() {
         val sydney = LatLng(-34.0, 151.0)
         googleMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+    }*/
+
+    private val viewModel  by viewModels<MapViewModel> {
+        MapViewModelFactory(
+            (requireContext().applicationContext as KyivPlacesApplication).kyivPlacesDataSource
+        )
     }
 
     override fun onCreateView(
@@ -37,12 +47,19 @@ class MapFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_map, container, false)
+        val binding = FragmentMapBinding.inflate(inflater, container, false)
+
+        binding.viewModel = viewModel
+        binding.lifecycleOwner = viewLifecycleOwner
+        binding.places.adapter = KyivPlaceAdapter()
+
+        return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    /*override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
-        mapFragment?.getMapAsync(callback)
-    }
+        /*val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
+        mapFragment?.getMapAsync(callback)*/
+
+    }*/
 }
