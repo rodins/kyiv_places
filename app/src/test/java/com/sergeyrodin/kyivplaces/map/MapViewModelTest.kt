@@ -25,12 +25,13 @@ class MapViewModelTest {
     @get:Rule
     val coroutineRule = MainCoroutineRule()
 
-    private lateinit var subject: MapViewModel
+    private lateinit var viewModel: MapViewModel
     private lateinit var dataSource: FakeDataSource
 
     @Before
     fun init() {
         dataSource = FakeDataSource()
+        viewModel = MapViewModel(dataSource)
     }
 
     @Test
@@ -39,9 +40,9 @@ class MapViewModelTest {
         dataSource.insertPlace(PLACE2)
         dataSource.insertPlace(PLACE3)
 
-        subject = MapViewModel(dataSource)
+        viewModel.onMapCallback()
 
-        val places = subject.places.getOrAwaitValue()
+        val places = viewModel.places.getOrAwaitValue()
         assertThat(places.size, `is`(3))
         assertThat(places[0].name, `is`(PLACE1.name))
         assertThat(places[1].name, `is`(PLACE2.name))
@@ -49,16 +50,14 @@ class MapViewModelTest {
     }
 
     @Test
-    fun getPlacesJosnError_placesSizeZero() {
-        dataSource.insertPlace(PLACE1)
-        dataSource.insertPlace(PLACE2)
-        dataSource.insertPlace(PLACE3)
+    fun getPlacesJosnError_errorEventIsTrue() {
         dataSource.isJsonError = true
 
-        subject = MapViewModel(dataSource)
+        viewModel.onViewCreated()
+        viewModel.onMapCallback()
 
-        val places = subject.places.getOrAwaitValue()
-        assertThat(places.size, `is`(0))
+        val error = viewModel.errorEvent.getOrAwaitValue()
+        assertThat(error, `is`(true))
     }
 
     @Test
@@ -69,14 +68,15 @@ class MapViewModelTest {
 
         coroutineRule.pauseDispatcher()
 
-        subject = MapViewModel(dataSource)
+        viewModel.onViewCreated()
+        viewModel.onMapCallback()
 
-        val loadingBefore = subject.loadingEvent.getOrAwaitValue()
+        val loadingBefore = viewModel.loadingEvent.getOrAwaitValue()
         assertThat(loadingBefore, `is`(true))
 
         coroutineRule.resumeDispatcher()
 
-        val loadingAfter = subject.loadingEvent.getOrAwaitValue()
+        val loadingAfter = viewModel.loadingEvent.getOrAwaitValue()
         assertThat(loadingAfter, `is`(false))
     }
 
@@ -84,9 +84,9 @@ class MapViewModelTest {
     fun errorMode_errorEventTrue() {
         dataSource.isError = true
 
-        subject = MapViewModel(dataSource)
+        viewModel.onMapCallback()
 
-        val error = subject.errorEvent.getOrAwaitValue()
+        val error = viewModel.errorEvent.getOrAwaitValue()
         assertThat(error, `is`(true))
     }
 
@@ -96,9 +96,60 @@ class MapViewModelTest {
         dataSource.insertPlace(PLACE2)
         dataSource.insertPlace(PLACE3)
 
-        subject = MapViewModel(dataSource)
+        viewModel.onMapCallback()
 
-        val error = subject.errorEvent.getOrAwaitValue()
+        val error = viewModel.errorEvent.getOrAwaitValue()
         assertThat(error, `is`(false))
+    }
+
+    @Test
+    fun onViewCreated_loadingEventTrue() {
+        viewModel.onViewCreated()
+
+        val loadingBefore = viewModel.loadingEvent.getOrAwaitValue()
+        assertThat(loadingBefore, `is`(true))
+    }
+
+    @Test
+    fun onViewCreated_dataEventFalse() {
+        viewModel.onViewCreated()
+
+        val dataEvent = viewModel.dataEvent.getOrAwaitValue()
+        assertThat(dataEvent, `is`(false))
+    }
+
+    @Test
+    fun onGetData_dataEventTrue() {
+        dataSource.insertPlace(PLACE1)
+        dataSource.insertPlace(PLACE2)
+        dataSource.insertPlace(PLACE3)
+
+        viewModel.onViewCreated()
+        viewModel.onMapCallback()
+
+        val dataEvent = viewModel.dataEvent.getOrAwaitValue()
+        assertThat(dataEvent, `is`(true))
+    }
+
+    @Test
+    fun onError_dataEventFalse() {
+        dataSource.isError = true
+
+        viewModel.onViewCreated()
+        viewModel.onMapCallback()
+
+        val dataEvent = viewModel.dataEvent.getOrAwaitValue()
+        assertThat(dataEvent, `is`(false))
+    }
+
+    @Test
+    fun onJsonError_dataEventFalse() {
+        dataSource.isJsonError = true
+
+        viewModel.onViewCreated()
+        viewModel.onMapCallback()
+
+        val dataEvent = viewModel.dataEvent.getOrAwaitValue()
+        assertThat(dataEvent, `is`(false))
     }
 }

@@ -32,16 +32,19 @@ class MapFragmentTest {
     @get:Rule
     val instantExecutorRule = InstantTaskExecutorRule()
 
-
     @get:Rule
     val coroutineRule = MainCoroutineRule()
 
     private lateinit var dataSource: FakeDataSource
+    private lateinit var args: Bundle
 
     @Before
     fun initDataSource() {
         dataSource = FakeDataSource()
         ServiceLocator.kyivPlacesDataSource = dataSource
+        args = Bundle().apply {
+            putCharSequence("title", "Email")
+        }
     }
 
     @Test
@@ -54,9 +57,7 @@ class MapFragmentTest {
         val text2 = "${PLACE2.id}. ${PLACE2.name}"
         val text3 = "${PLACE3.id}. ${PLACE3.name}"
 
-        val args = Bundle().apply {
-            putCharSequence("title", "Email")
-        }
+
         launchFragmentInContainer<MapFragment>(args, R.style.Theme_KyivPlaces)
 
         onView(withText(text1)).check(matches(isDisplayed()))
@@ -68,12 +69,25 @@ class MapFragmentTest {
     fun errorMode_errorMsgDisplayed() {
         dataSource.isError = true
 
-        val args = Bundle().apply {
-            putCharSequence("title", "Email")
-        }
         launchFragmentInContainer<MapFragment>(args, R.style.Theme_KyivPlaces)
 
         onView(withId(R.id.error_text)).check(matches(isDisplayed()))
+    }
+
+    @Test
+    fun mapViewIsDisplayed() {
+        launchFragmentInContainer<MapFragment>(args, R.style.Theme_KyivPlaces)
+
+        onView(withId(R.id.map_view)).check(matches(isDisplayed()))
+    }
+
+    @Test
+    fun errorMode_mapViewIsNotDisplayed() {
+        dataSource.isError = true
+
+        launchFragmentInContainer<MapFragment>(args, R.style.Theme_KyivPlaces)
+
+        onView(withId(R.id.map_view)).check(matches(not(isDisplayed())))
     }
 
 }

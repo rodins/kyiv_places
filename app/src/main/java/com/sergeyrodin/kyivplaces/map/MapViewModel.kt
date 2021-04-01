@@ -13,6 +13,10 @@ import java.io.IOException
 
 class MapViewModel(private val dataSource: KyivPlacesDataSource) : ViewModel() {
 
+    private val _dataEvent = MutableLiveData<Boolean>()
+    val dataEvent: LiveData<Boolean>
+        get() = _dataEvent
+
     private val _errorEvent = MutableLiveData<Boolean>()
     val errorEvent: LiveData<Boolean>
         get() = _errorEvent
@@ -25,23 +29,28 @@ class MapViewModel(private val dataSource: KyivPlacesDataSource) : ViewModel() {
     val places: LiveData<List<KyivPlace>>
         get() = _places
 
-    init {
+    fun onMapCallback() {
         getPlacesFromNetwork()
     }
 
     private fun getPlacesFromNetwork() {
-        _loadingEvent.value = true
         _errorEvent.value = false
         viewModelScope.launch {
             try {
                 _places.value = dataSource.getPlaces()
+                _dataEvent.value = true
             } catch (e: IOException) {
                 _errorEvent.value = true
             } catch (e: JsonDataException) {
-                _places.value = listOf()
+                _errorEvent.value = true
             } finally {
                 _loadingEvent.value = false
             }
         }
+    }
+
+    fun onViewCreated() {
+        _loadingEvent.value = true
+        _dataEvent.value = false
     }
 }

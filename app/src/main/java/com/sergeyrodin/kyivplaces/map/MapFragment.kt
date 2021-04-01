@@ -6,37 +6,24 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.viewModels
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.sergeyrodin.kyivplaces.KyivPlacesApplication
-import com.sergeyrodin.kyivplaces.R
 import com.sergeyrodin.kyivplaces.databinding.FragmentMapBinding
+import com.sergeyrodin.kyivplaces.network.KyivPlace
+
+private const val MAPVIEW_BUNDLE_KEY = "MapViewBundleKey"
 
 class MapFragment : Fragment() {
 
-    /*private val callback = OnMapReadyCallback { googleMap ->
-        /**
-         * Manipulates the map once available.
-         * This callback is triggered when the map is ready to be used.
-         * This is where we can add markers or lines, add listeners or move the camera.
-         * In this case, we just add a marker near Sydney, Australia.
-         * If Google Play services is not installed on the device, the user will be prompted to
-         * install it inside the SupportMapFragment. This method will only be triggered once the
-         * user has installed Google Play services and returned to the app.
-         */
-        val sydney = LatLng(-34.0, 151.0)
-        googleMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
-    }*/
+    private lateinit var binding: FragmentMapBinding
+    private lateinit var map: GoogleMap
 
-    private val viewModel  by viewModels<MapViewModel> {
+    private val viewModel by viewModels<MapViewModel> {
         MapViewModelFactory(
             (requireContext().applicationContext as KyivPlacesApplication).kyivPlacesDataSource
         )
@@ -46,20 +33,113 @@ class MapFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val binding = FragmentMapBinding.inflate(inflater, container, false)
+    ): View {
+        binding = FragmentMapBinding.inflate(inflater, container, false)
 
-        binding.viewModel = viewModel
-        binding.lifecycleOwner = viewLifecycleOwner
-        binding.places.adapter = KyivPlaceAdapter()
+        setupBinding()
+        setupMapView(savedInstanceState)
+        observePlaces()
 
         return binding.root
     }
 
-    /*override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        /*val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
-        mapFragment?.getMapAsync(callback)*/
+    private fun setupBinding() {
+        binding.viewModel = viewModel
+        binding.lifecycleOwner = viewLifecycleOwner
+        binding.places.adapter = KyivPlaceAdapter()
+    }
 
-    }*/
+    private fun setupMapView(savedInstanceState: Bundle?) {
+        val mapViewBundle = savedInstanceState?.getBundle(MAPVIEW_BUNDLE_KEY)
+        binding.mapView.onCreate(mapViewBundle)
+    }
+
+    private fun observePlaces() {
+        viewModel.places.observe(viewLifecycleOwner) {
+            if (::map.isInitialized) {
+                addMarkersOnMap(it)
+            }
+        }
+    }
+
+    private fun addMarkersOnMap(places: List<KyivPlace>) {
+        if (places.isEmpty()) return
+        moveCamera(places)
+        addMarkers(places)
+    }
+
+    private fun moveCamera(places: List<KyivPlace>) {
+        val cameraLatLng = getCameraLatLngWithAvgValues(places)
+        val zoomLevel = 14f
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(cameraLatLng, zoomLevel))
+    }
+
+    private fun getCameraLatLngWithAvgValues(places: List<KyivPlace>): LatLng {
+        val avgLatitude = places.map {
+            it.latitude
+        }.average()
+        val avgLongitude = places.map {
+            it.longitude
+        }.average()
+        return LatLng(avgLatitude, avgLongitude)
+    }
+
+    private fun addMarkers(places: List<KyivPlace>) {
+        places.forEach { place ->
+            val latLng = LatLng(place.latitude, place.longitude)
+            map.addMarker(MarkerOptions().position(latLng))
+        }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        viewModel.onViewCreated()
+        getMapAsync()
+    }
+
+    private fun getMapAsync() {
+        binding.mapView.getMapAsync { googleMap ->
+            map = googleMap
+            viewModel.onMapCallback()
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        val mapViewBundle = outState.getBundle(MAPVIEW_BUNDLE_KEY) ?: Bundle().also {
+            outState.putBundle(MAPVIEW_BUNDLE_KEY, it)
+        }
+        binding.mapView.onSaveInstanceState(mapViewBundle)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.mapView.onResume()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        binding.mapView.onStart()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        binding.mapView.onStop()
+    }
+
+    override fun onPause() {
+        binding.mapView.onPause()
+        super.onPause()
+    }
+
+    override fun onDestroy() {
+        binding.mapView.onDestroy()
+        super.onDestroy()
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        binding.mapView.onLowMemory()
+    }
 }

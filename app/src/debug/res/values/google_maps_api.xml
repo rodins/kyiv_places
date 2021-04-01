@@ -4,12 +4,12 @@
 
     To get one, follow this link, follow the directions and press "Create" at the end:
 
-    https://console.developers.google.com/flows/enableapi?apiid=maps_android_backend&keyType=CLIENT_SIDE_ANDROID&r=3B:82:B8:CD:F1:08:39:26:2F:11:36:76:C1:99:65:90:5C:91:CE:D5%3Bcom.sergeyrodin.kyivplaces.map
+    https://console.developers.google.com/flows/enableapi?apiid=maps_android_backend&keyType=CLIENT_SIDE_ANDROID&r=3B:82:B8:CD:F1:08:39:26:2F:11:36:76:C1:99:65:90:5C:91:CE:D5%3Bcom.sergeyrodin.kyivplaces
 
     You can also add your credentials to an existing key, using these values:
 
     Package name:
-    com.sergeyrodin.kyivplaces.map
+    com.sergeyrodin.kyivplaces
 
     SHA-1 certificate fingerprint:
     3B:82:B8:CD:F1:08:39:26:2F:11:36:76:C1:99:65:90:5C:91:CE:D5
@@ -20,5 +20,5 @@
     Once you have your key (it starts with "AIza"), replace the "google_maps_key"
     string in this file.
     -->
-    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">YOUR_KEY_HERE</string>
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyCIIrm3CrZRLL7-HXAWDxj9BuGFBWpvXek</string>
 </resources>
