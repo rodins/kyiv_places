@@ -7,6 +7,7 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
 
 private const val BASE_URL = "https://2fjd9l3x1l.api.quickmocker.com/"
+//private const val BASE_URL = "https://my-json-server.typicode.com/"
 
 private val moshi = Moshi.Builder()
     .add(KotlinJsonAdapterFactory())
@@ -18,6 +19,7 @@ private val retrofit = Retrofit.Builder()
     .build()
 
 interface KyivPlacesApiService {
+    //@GET("rodins/kyiv_places/db")
     @GET("kyiv/places")
     suspend fun getKyivPlaces(): KyivPlaces
 }
