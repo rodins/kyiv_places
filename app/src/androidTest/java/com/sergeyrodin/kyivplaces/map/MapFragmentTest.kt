@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -67,11 +68,12 @@ class MapFragmentTest {
 
     @Test
     fun errorMode_errorMsgDisplayed() {
+        val errorText = "Test IOException"
         dataSource.isError = true
 
         launchFragmentInContainer<MapFragment>(args, R.style.Theme_KyivPlaces)
 
-        onView(withId(R.id.error_text)).check(matches(isDisplayed()))
+        onView(withText(errorText)).check(matches(isDisplayed()))
     }
 
     @Test
@@ -88,6 +90,29 @@ class MapFragmentTest {
         launchFragmentInContainer<MapFragment>(args, R.style.Theme_KyivPlaces)
 
         onView(withId(R.id.map_view)).check(matches(not(isDisplayed())))
+    }
+
+    @Test
+    fun errorMode_retryButtonIsDisplayed() {
+        dataSource.isError = true
+
+        launchFragmentInContainer<MapFragment>(args, R.style.Theme_KyivPlaces)
+
+        onView(withText(R.string.retry)).check(matches(isDisplayed()))
+    }
+
+    @Test
+    fun errorMode_retryClick_placeNameDisplayed() {
+        dataSource.insertPlace(PLACE1)
+        val text1 = "${PLACE1.id}. ${PLACE1.name}"
+        dataSource.isError = true
+
+        launchFragmentInContainer<MapFragment>(args, R.style.Theme_KyivPlaces)
+
+        dataSource.isError = false
+        onView(withText(R.string.retry)).perform(click())
+
+        onView(withText(text1)).check(matches(isDisplayed()))
     }
 
 }

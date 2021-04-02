@@ -7,4 +7,5 @@
     <string name="enter_password">Enter password</string>
     <string name="login">Login</string>
     <string name="error_text">Loading places error!</string>
+    <string name="retry">Retry</string>
 </resources>

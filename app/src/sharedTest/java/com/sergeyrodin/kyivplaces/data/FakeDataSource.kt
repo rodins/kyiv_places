@@ -7,15 +7,13 @@ import java.io.IOException
 class FakeDataSource: KyivPlacesDataSource {
     private val places = mutableListOf<KyivPlace>()
     var isError = false
-    var isJsonError = false
 
     fun insertPlace(place: KyivPlace) {
         places.add(place)
     }
 
     override suspend fun getPlaces(): List<KyivPlace> {
-        if(isError) throw IOException()
-        if(isJsonError) throw JsonDataException()
+        if(isError) throw IOException("Test IOException")
         return places
     }
 }

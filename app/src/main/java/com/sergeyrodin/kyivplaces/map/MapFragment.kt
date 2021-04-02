@@ -1,13 +1,11 @@
 package com.sergeyrodin.kyivplaces.map
 
-import androidx.fragment.app.Fragment
-
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
@@ -55,10 +53,16 @@ class MapFragment : Fragment() {
     }
 
     private fun observePlaces() {
-        viewModel.places.observe(viewLifecycleOwner) {
-            if (::map.isInitialized) {
-                addMarkersOnMap(it)
-            }
+        viewModel.places.observe(viewLifecycleOwner) { places ->
+            getMapAsyncAndAddPlaces(places)
+        }
+    }
+
+    private fun getMapAsyncAndAddPlaces(places: List<KyivPlace>) {
+        if(places.isEmpty()) return
+        binding.mapView.getMapAsync { googleMap ->
+            map = googleMap
+            addMarkersOnMap(places)
         }
     }
 
@@ -94,15 +98,7 @@ class MapFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.onViewCreated()
-        getMapAsync()
-    }
-
-    private fun getMapAsync() {
-        binding.mapView.getMapAsync { googleMap ->
-            map = googleMap
-            viewModel.onMapCallback()
-        }
+        viewModel.loadPlacesOnce()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
